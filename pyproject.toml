@@ -1,0 +1,52 @@
+[build-system]
+requires = ["uv_build>=0.6,<1"]
+build-backend = "uv_build"
+
+[project]
+name = "benchdiff"
+version = "0.0.0"
+description = "CLI benchmarking tool with rich output, markdown, SVG, and pytest integration."
+readme = "README.md"
+authors = [{ name = "Amin Alaee", email = "mohammadamin.alaee@gmail.com" }]
+keywords = ["benchmark", "cli", "performance"]
+requires-python = ">=3.10"
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Intended Audience :: Developers",
+  "Operating System :: OS Independent",
+]
+license = "MIT"
+dependencies = [
+  "rich",
+  "typer",
+]
+
+[project.scripts]
+benchdiff = "benchdiff.cli:app"
+
+[project.urls]
+Documentation = "https://github.com/aminalaee/benchdiff"
+Issues = "https://github.com/aminalaee/benchdiff/issues"
+Source = "https://github.com/aminalaee/benchdiff"
+
+[project.optional-dependencies]
+pytest = ["pytest"]
+svg = ["matplotlib"]
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "W",
+    "F",
+    "I",
+    "C4",
+    "UP",
+]
