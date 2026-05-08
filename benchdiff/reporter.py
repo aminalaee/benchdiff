@@ -110,3 +110,44 @@ def print_results(
         _system_info(repeat, times),
     )
     console.print(Panel(content, title="[bold]benchdiff[/bold]", expand=False))
+
+
+def print_markdown(groups: list[GroupResult], repeat: int = 5, times: int = 1000) -> None:
+    units: set[str] = set()
+
+    print("| Benchmark | Min | Median | Max | × |")
+    print("|:---|---:|---:|---:|---:|")
+
+    for group in groups:
+        fastest = group.fastest
+        unit = _unit(fastest.median)
+        units.add(unit)
+
+        print(f"| **{group.name}** | | | | |")
+
+        for result in group.results:
+            is_fastest = result.name == fastest.name
+            ratio = result.median / fastest.median if fastest.median > 0 else 1.0
+            ratio_str = "1.000x" if is_fastest else f"{ratio:.3f}x"
+            print(
+                f"| {result.name} "
+                f"| {_fmt_time(result.min, unit)} "
+                f"| {_fmt_time(result.median, unit)} "
+                f"| {_fmt_time(result.max, unit)} "
+                f"| {ratio_str} |"
+            )
+
+    print()
+    if len(units) == 1:
+        print(f"*times in {_UNIT_NAMES[next(iter(units))]}, lower is better*")
+    else:
+        print("*lower is better*")
+
+    cpu = cpuinfo.get_cpu_info().get("brand_raw") or platform.processor() or platform.machine()
+    print(
+        f"\nPython {sys.version.split()[0]} · "
+        f"{platform.platform(terse=True)} · "
+        f"{cpu} · "
+        f"{repeat:,} × {times:,} rounds · "
+        f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+    )

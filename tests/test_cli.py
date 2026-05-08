@@ -29,3 +29,16 @@ def test_cli_default_path(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> No
     monkeypatch.chdir(tmp_path)
     result = runner.invoke(app, [])
     assert result.exit_code == 1
+
+
+def test_cli_markdown(tmp_path: Path) -> None:
+    bench = tmp_path / "bench_example.py"
+    bench.write_text(
+        "def fn_a(): pass\n"
+        "def fn_b(): pass\n"
+        '__benchmarks__ = [("group", [fn_a, fn_b])]\n'
+    )
+    result = runner.invoke(app, [str(tmp_path), "--markdown", "--repeat", "2", "--times", "10"])
+    assert result.exit_code == 0
+    assert "**group**" in result.output
+    assert "| Benchmark |" in result.output
