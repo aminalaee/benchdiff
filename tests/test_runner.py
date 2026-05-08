@@ -3,17 +3,17 @@ from pathlib import Path
 from benchdiff.runner import _load_benchmarks, _time_fn, run
 
 
-def test_time_fn_returns_correct_sample_count():
+def test_time_fn_returns_correct_sample_count() -> None:
     timings = _time_fn(lambda: None, repeat=3, times=10)
     assert len(timings) == 3
 
 
-def test_time_fn_positive_timings():
+def test_time_fn_positive_timings() -> None:
     timings = _time_fn(lambda: None, repeat=5, times=10)
     assert all(t >= 0 for t in timings)
 
 
-def test_load_benchmarks(tmp_path: Path):
+def test_load_benchmarks(tmp_path: Path) -> None:
     bench = tmp_path / "bench_example.py"
     bench.write_text(
         "def fn_a(): pass\n"
@@ -27,13 +27,13 @@ def test_load_benchmarks(tmp_path: Path):
     assert [f.__name__ for f in fns] == ["fn_a", "fn_b"]
 
 
-def test_load_benchmarks_missing_attr(tmp_path: Path):
+def test_load_benchmarks_missing_attr(tmp_path: Path) -> None:
     bench = tmp_path / "bench_empty.py"
     bench.write_text("def fn(): pass\n")
     assert _load_benchmarks(bench) == []
 
 
-def test_run(tmp_path: Path):
+def test_run(tmp_path: Path) -> None:
     bench = tmp_path / "bench_example.py"
     bench.write_text(
         "def fn_a(): pass\n"
@@ -46,6 +46,6 @@ def test_run(tmp_path: Path):
     assert len(results[0].results) == 2
 
 
-def test_run_no_bench_files(tmp_path: Path):
+def test_run_no_bench_files(tmp_path: Path) -> None:
     results = run(tmp_path)
     assert results == []

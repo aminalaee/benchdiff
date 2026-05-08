@@ -29,6 +29,7 @@ classifiers = [
 ]
 license = "MIT"
 dependencies = [
+  "py-cpuinfo>=9.0.0",
   "rich",
   "typer",
 ]
@@ -52,6 +53,15 @@ dev = [
     "ruff",
     "uuid-utils",
 ]
+
+[tool.mypy]
+disallow_untyped_defs = true
+ignore_missing_imports = true
+no_implicit_optional = true
+
+[[tool.mypy.overrides]]
+module = "cpuinfo"
+ignore_missing_imports = true
 
 [tool.ruff.lint]
 select = [
