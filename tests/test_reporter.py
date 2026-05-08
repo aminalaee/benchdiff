@@ -3,7 +3,7 @@ import sys
 import pytest
 
 from benchdiff.models import BenchmarkResult, GroupResult
-from benchdiff.reporter import _fmt_time, _hint, _unit, print_results
+from benchdiff.reporter import _fmt_time, _hint, _unit, print_markdown, print_results
 
 
 def test_unit_nanoseconds() -> None:
@@ -133,3 +133,49 @@ def test_print_results_system_info_rounds_format(capsys: pytest.CaptureFixture) 
     print_results(groups, repeat=5, times=10_000)
     output = capsys.readouterr().out
     assert "10,000" in output
+
+
+def test_print_markdown_structure(capsys: pytest.CaptureFixture) -> None:
+    groups = [
+        GroupResult(
+            name="UUID generation",
+            results=[
+                BenchmarkResult(name="fast", timings=[0.000001, 0.000001, 0.000001]),
+                BenchmarkResult(name="slow", timings=[0.000003, 0.000003, 0.000003]),
+            ],
+        )
+    ]
+    print_markdown(groups)
+    output = capsys.readouterr().out
+    assert "**UUID generation**" in output
+    assert "| Benchmark |" in output
+    assert "fast" in output
+    assert "1.000x" in output
+    assert "3.000x" in output
+
+
+def test_print_markdown_mixed_units_hint(capsys: pytest.CaptureFixture) -> None:
+    groups = [
+        GroupResult(name="ns group", results=[BenchmarkResult(name="a", timings=[0.0000001])]),
+        GroupResult(name="ms group", results=[BenchmarkResult(name="b", timings=[0.001])]),
+    ]
+    print_markdown(groups)
+    output = capsys.readouterr().out
+    assert "*lower is better*" in output
+    assert "nanoseconds" not in output
+
+
+def test_print_markdown_no_rich_markup(capsys: pytest.CaptureFixture) -> None:
+    groups = [
+        GroupResult(
+            name="group",
+            results=[
+                BenchmarkResult(name="a", timings=[1.0]),
+                BenchmarkResult(name="b", timings=[2.0]),
+            ],
+        )
+    ]
+    print_markdown(groups)
+    output = capsys.readouterr().out
+    assert "[green]" not in output
+    assert "[red]" not in output
