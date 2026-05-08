@@ -91,15 +91,15 @@ Options:
 benchdiff benchmarks/ --markdown
 ```
 
-| Benchmark                |       Min |    Median |       Max |      × |
-| :----------------------- | --------: | --------: | --------: | -----: |
-| **String concatenation** |           |           |           |        |
-| concat                   |  81.000ns |  89.583ns |  95.541ns | 1.795x |
-| join                     |  43.041ns |  49.917ns |  50.709ns | 1.000x |
-| **String formatting**    |           |           |           |        |
-| format_string            | 106.875ns | 110.125ns | 113.292ns | 1.572x |
-| fstring                  |  68.709ns |  70.041ns |  74.250ns | 1.000x |
+| Benchmark | Min | Median | Max | × |
+|:---|:---:|:---:|:---:|:---:|
+| **String concatenation** | | | | |
+| concat | 84.875ns | 94.250ns | 157.792ns | 1.879x |
+| join | 50.042ns | 50.167ns | 52.166ns | 1.000x |
+| **String formatting** | | | | |
+| format_string | 113.833ns | 115.083ns | 118.750ns | 1.539x |
+| fstring | 72.375ns | 74.791ns | 84.583ns | 1.000x |
 
 *times in nanoseconds, lower is better*
 
-Python 3.14.2 · macOS-26.3.1 · Apple M3 Pro · 5 × 1,000 rounds · 2026-05-08 10:05:59
+Python 3.14.2 · macOS-26.3.1 · Apple M3 Pro · 5 × 1,000 rounds · 2026-05-08 11:14:38

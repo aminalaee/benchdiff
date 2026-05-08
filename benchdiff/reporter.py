@@ -73,10 +73,10 @@ def print_results(
 
     table = Table(box=box.SIMPLE_HEAD, show_header=True, header_style="bold")
     table.add_column("Benchmark", no_wrap=True)
-    table.add_column("Min", justify="center")
-    table.add_column("Median", justify="center")
-    table.add_column("Max", justify="center")
-    table.add_column("×", justify="center")
+    table.add_column("Min", justify="center", min_width=12, no_wrap=True)
+    table.add_column("Median", justify="center", min_width=12, no_wrap=True)
+    table.add_column("Max", justify="center", min_width=12, no_wrap=True)
+    table.add_column("×", justify="center", min_width=7, no_wrap=True)
 
     for group in groups:
         fastest = group.fastest
@@ -118,7 +118,7 @@ def print_markdown(
     units: set[str] = set()
 
     print("| Benchmark | Min | Median | Max | × |")
-    print("|:---|---:|---:|---:|---:|")
+    print("|:---|:---:|:---:|:---:|:---:|")
 
     for group in groups:
         fastest = group.fastest
