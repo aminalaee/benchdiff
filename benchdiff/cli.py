@@ -20,4 +20,4 @@ def main(
     if not results:
         typer.echo("No benchmarks found.")
         raise typer.Exit(1)
-    print_results(results)
+    print_results(results, repeat=repeat, times=times)

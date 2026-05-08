@@ -1,9 +1,24 @@
+import platform
+import sys
+from datetime import datetime
+
+import cpuinfo
 from rich import box
 from rich.console import Console
+from rich.console import Group as RenderGroup
 from rich.panel import Panel
+from rich.rule import Rule
 from rich.table import Table
+from rich.text import Text
 
 from benchdiff.models import GroupResult
+
+_UNIT_NAMES = {
+    "ns": "nanoseconds",
+    "µs": "microseconds",
+    "ms": "milliseconds",
+    "s": "seconds",
+}
 
 
 def _unit(seconds: float) -> str:
@@ -26,8 +41,35 @@ def _fmt_time(seconds: float, unit: str) -> str:
     return f"{seconds:.3f}s"
 
 
-def print_results(groups: list[GroupResult]) -> None:
+def _hint(units: set[str]) -> Text:
+    if len(units) == 1:
+        unit_name = _UNIT_NAMES[next(iter(units))]
+        return Text(f"  * times in {unit_name}, lower is better", style="dim")
+    return Text("  * lower is better", style="dim")
+
+
+def _system_info(repeat: int, times: int) -> Table:
+    cpu = (
+        cpuinfo.get_cpu_info().get("brand_raw")
+        or platform.processor()
+        or platform.machine()
+    )
+    info = Table(box=None, show_header=False, padding=(0, 2))
+    info.add_column(style="dim")
+    info.add_column(style="dim")
+    info.add_row("Python", sys.version.split()[0])
+    info.add_row("Platform", platform.platform(terse=True))
+    info.add_row("CPU", cpu)
+    info.add_row("Rounds", f"{repeat:,} × {times:,} calls")
+    info.add_row("Date", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    return info
+
+
+def print_results(
+    groups: list[GroupResult], repeat: int = 5, times: int = 1000
+) -> None:
     console = Console()
+    units: set[str] = set()
 
     table = Table(box=box.SIMPLE_HEAD, show_header=True, header_style="bold")
     table.add_column("Benchmark", no_wrap=True)
@@ -39,6 +81,7 @@ def print_results(groups: list[GroupResult]) -> None:
     for group in groups:
         fastest = group.fastest
         unit = _unit(fastest.median)
+        units.add(unit)
         table.add_row(f"[bold cyan]{group.name}[/bold cyan]", "", "", "", "")
 
         for result in group.results:
@@ -60,4 +103,10 @@ def print_results(groups: list[GroupResult]) -> None:
                 ratio_str,
             )
 
-    console.print(Panel(table, title="[bold]benchdiff[/bold]", expand=False))
+    content = RenderGroup(
+        table,
+        _hint(units),
+        Rule(style="dim"),
+        _system_info(repeat, times),
+    )
+    console.print(Panel(content, title="[bold]benchdiff[/bold]", expand=False))
