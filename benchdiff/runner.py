@@ -29,8 +29,9 @@ def run(
     repeat: int = 5,
     times: int = 1000,
 ) -> list[GroupResult]:
+    files = [path] if path.is_file() else sorted(path.glob("bench_*.py"))
     results = []
-    for file in sorted(path.glob("bench_*.py")):
+    for file in files:
         for group_name, fns in _load_benchmarks(file):
             group_results = [
                 BenchmarkResult(name=fn.__name__, timings=_time_fn(fn, repeat, times))
