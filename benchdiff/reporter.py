@@ -112,7 +112,9 @@ def print_results(
     console.print(Panel(content, title="[bold]benchdiff[/bold]", expand=False))
 
 
-def print_markdown(groups: list[GroupResult], repeat: int = 5, times: int = 1000) -> None:
+def print_markdown(
+    groups: list[GroupResult], repeat: int = 5, times: int = 1000
+) -> None:
     units: set[str] = set()
 
     print("| Benchmark | Min | Median | Max | × |")
@@ -143,7 +145,11 @@ def print_markdown(groups: list[GroupResult], repeat: int = 5, times: int = 1000
     else:
         print("*lower is better*")
 
-    cpu = cpuinfo.get_cpu_info().get("brand_raw") or platform.processor() or platform.machine()
+    cpu = (
+        cpuinfo.get_cpu_info().get("brand_raw")
+        or platform.processor()
+        or platform.machine()
+    )
     print(
         f"\nPython {sys.version.split()[0]} · "
         f"{platform.platform(terse=True)} · "

@@ -38,7 +38,9 @@ def test_cli_markdown(tmp_path: Path) -> None:
         "def fn_b(): pass\n"
         '__benchmarks__ = [("group", [fn_a, fn_b])]\n'
     )
-    result = runner.invoke(app, [str(tmp_path), "--markdown", "--repeat", "2", "--times", "10"])
+    result = runner.invoke(
+        app, [str(tmp_path), "--markdown", "--repeat", "2", "--times", "10"]
+    )
     assert result.exit_code == 0
     assert "**group**" in result.output
     assert "| Benchmark |" in result.output

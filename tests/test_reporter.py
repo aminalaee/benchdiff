@@ -156,8 +156,12 @@ def test_print_markdown_structure(capsys: pytest.CaptureFixture) -> None:
 
 def test_print_markdown_mixed_units_hint(capsys: pytest.CaptureFixture) -> None:
     groups = [
-        GroupResult(name="ns group", results=[BenchmarkResult(name="a", timings=[0.0000001])]),
-        GroupResult(name="ms group", results=[BenchmarkResult(name="b", timings=[0.001])]),
+        GroupResult(
+            name="ns group", results=[BenchmarkResult(name="a", timings=[0.0000001])]
+        ),
+        GroupResult(
+            name="ms group", results=[BenchmarkResult(name="b", timings=[0.001])]
+        ),
     ]
     print_markdown(groups)
     output = capsys.readouterr().out
