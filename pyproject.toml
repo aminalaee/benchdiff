@@ -2,6 +2,10 @@
 requires = ["uv_build>=0.6,<1"]
 build-backend = "uv_build"
 
+[tool.uv.build-backend]
+module-name = "benchdiff"
+module-root = ""
+
 [project]
 name = "benchdiff"
 version = "0.0.0"
@@ -38,8 +42,16 @@ Issues = "https://github.com/aminalaee/benchdiff/issues"
 Source = "https://github.com/aminalaee/benchdiff"
 
 [project.optional-dependencies]
-pytest = ["pytest"]
 svg = ["matplotlib"]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "mypy",
+    "ruff",
+    "uuid-utils",
+]
 
 [tool.ruff.lint]
 select = [
