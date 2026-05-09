@@ -6,7 +6,6 @@ import pytest
 from benchdiff.models import BenchmarkResult, GroupResult
 from benchdiff.reporter import (
     _fmt_time,
-    _hint,
     _to_unit,
     _unit,
     print_markdown,
@@ -124,18 +123,7 @@ def test_print_results_system_info(capsys: pytest.CaptureFixture) -> None:
     assert "500" in output
 
 
-def test_hint_single_unit() -> None:
-    assert "nanoseconds" in _hint({"ns"}).plain
-    assert "lower is better" in _hint({"ns"}).plain
-
-
-def test_hint_mixed_units() -> None:
-    text = _hint({"ns", "µs"}).plain
-    assert "lower is better" in text
-    assert "nanoseconds" not in text
-
-
-def test_print_results_hint(capsys: pytest.CaptureFixture) -> None:
+def test_print_results_no_hint(capsys: pytest.CaptureFixture) -> None:
     groups = [
         GroupResult(
             name="group",
@@ -144,8 +132,7 @@ def test_print_results_hint(capsys: pytest.CaptureFixture) -> None:
     ]
     print_results(groups)
     output = capsys.readouterr().out
-    assert "microseconds" in output
-    assert "lower is better" in output
+    assert "lower is better" not in output
 
 
 def test_print_results_system_info_rounds_format(capsys: pytest.CaptureFixture) -> None:

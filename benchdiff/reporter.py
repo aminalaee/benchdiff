@@ -10,7 +10,6 @@ from rich.console import Group as RenderGroup
 from rich.panel import Panel
 from rich.rule import Rule
 from rich.table import Table
-from rich.text import Text
 
 from benchdiff.models import GroupResult
 
@@ -40,13 +39,6 @@ def _fmt_time(seconds: float, unit: str) -> str:
     if unit == "ms":
         return f"{seconds * 1e3:.3f}ms"
     return f"{seconds:.3f}s"
-
-
-def _hint(units: set[str]) -> Text:
-    if len(units) == 1:
-        unit_name = _UNIT_NAMES[next(iter(units))]
-        return Text(f"  * times in {unit_name}, lower is better", style="dim")
-    return Text("  * lower is better", style="dim")
 
 
 def _cpu() -> str:
@@ -81,7 +73,6 @@ def print_results(
     groups: list[GroupResult], repeat: int = 5, times: int = 1000
 ) -> None:
     console = Console()
-    units: set[str] = set()
 
     table = Table(box=box.SIMPLE_HEAD, show_header=True, header_style="bold")
     table.add_column("Benchmark", no_wrap=True)
@@ -93,7 +84,6 @@ def print_results(
     for group in groups:
         fastest = group.fastest
         unit = _unit(fastest.median)
-        units.add(unit)
         table.add_row(f"[bold cyan]{group.name}[/bold cyan]", "", "", "", "")
 
         for result in group.results:
@@ -117,7 +107,6 @@ def print_results(
 
     content = RenderGroup(
         table,
-        _hint(units),
         Rule(style="dim"),
         _system_info(repeat, times),
     )
