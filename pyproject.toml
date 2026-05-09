@@ -8,7 +8,7 @@ module-root = ""
 
 [project]
 name = "benchdiff"
-version = "0.2.0"
+version = "0.3.0"
 description = "CLI benchmarking tool with rich terminal output and markdown export."
 readme = "README.md"
 authors = [{ name = "Amin Alaee", email = "mohammadamin.alaee@gmail.com" }]
