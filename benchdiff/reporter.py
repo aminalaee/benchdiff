@@ -1,6 +1,7 @@
 import platform
 import sys
 from datetime import datetime
+from pathlib import Path
 
 import cpuinfo
 from rich import box
@@ -48,18 +49,29 @@ def _hint(units: set[str]) -> Text:
     return Text("  * lower is better", style="dim")
 
 
-def _system_info(repeat: int, times: int) -> Table:
-    cpu = (
+def _cpu() -> str:
+    return (
         cpuinfo.get_cpu_info().get("brand_raw")
         or platform.processor()
         or platform.machine()
     )
+
+
+def _footer_str(repeat: int, times: int) -> str:
+    date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    python = sys.version.split()[0]
+    platform_str = platform.platform(terse=True)
+    rounds = f"{repeat:,} × {times:,} rounds"
+    return f"Python {python} · {platform_str} · {_cpu()} · {rounds} · {date}"
+
+
+def _system_info(repeat: int, times: int) -> Table:
     info = Table(box=None, show_header=False, padding=(0, 2))
     info.add_column(style="dim")
     info.add_column(style="dim")
     info.add_row("Python", sys.version.split()[0])
     info.add_row("Platform", platform.platform(terse=True))
-    info.add_row("CPU", cpu)
+    info.add_row("CPU", _cpu())
     info.add_row("Rounds", f"{repeat:,} × {times:,} calls")
     info.add_row("Date", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     return info
@@ -145,15 +157,80 @@ def print_markdown(
     else:
         print("*lower is better*")
 
-    cpu = (
-        cpuinfo.get_cpu_info().get("brand_raw")
-        or platform.processor()
-        or platform.machine()
+    print(f"\n{_footer_str(repeat, times)}")
+
+
+def _to_unit(seconds: float, unit: str) -> float:
+    if unit == "ns":
+        return seconds * 1e9
+    if unit == "µs":
+        return seconds * 1e6
+    if unit == "ms":
+        return seconds * 1e3
+    return seconds
+
+
+def save_svg(
+    groups: list[GroupResult], output: Path, repeat: int = 5, times: int = 1000
+) -> None:
+    try:
+        import matplotlib  # type: ignore[import]
+
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt  # type: ignore[import]
+    except ImportError:
+        raise ImportError(
+            "matplotlib is required for SVG output: pip install benchdiff[svg]"
+        )
+
+    n = len(groups)
+    fig, axes = plt.subplots(n, 1, figsize=(10, 1.8 * n + 1.2))
+    if n == 1:
+        axes = [axes]
+
+    for ax, group in zip(axes, groups):
+        fastest = group.fastest
+        unit = _unit(fastest.median)
+        names = [r.name for r in group.results]
+        medians = [_to_unit(r.median, unit) for r in group.results]
+        palette = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+        colors = [palette[i % len(palette)] for i in range(len(group.results))]
+
+        bars = ax.barh(names, medians, color=colors, height=0.5)
+        ax.invert_yaxis()
+
+        max_val = max(medians)
+        ax.set_xlim(0, max_val * 1.25)
+
+        for bar, result in zip(bars, group.results):
+            ratio = result.median / fastest.median
+            label = f"{ratio:.3f}x"
+            ax.text(
+                bar.get_width() + max_val * 0.02,
+                bar.get_y() + bar.get_height() / 2,
+                label,
+                va="center",
+                ha="left",
+                fontsize=9,
+                color="#555555",
+            )
+
+        ax.set_title(group.name, fontsize=10, fontweight="bold", loc="left", pad=4)
+        ax.set_xlabel(f"median time ({unit})", fontsize=8)
+        ax.tick_params(axis="both", labelsize=8)
+        ax.spines["top"].set_visible(False)
+        ax.spines["right"].set_visible(False)
+
+    fig.text(
+        0.5,
+        0.005,
+        _footer_str(repeat, times),
+        ha="center",
+        va="bottom",
+        fontsize=7,
+        color="#888888",
     )
-    print(
-        f"\nPython {sys.version.split()[0]} · "
-        f"{platform.platform(terse=True)} · "
-        f"{cpu} · "
-        f"{repeat:,} × {times:,} rounds · "
-        f"{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
-    )
+
+    plt.tight_layout(rect=(0, 0.03, 1, 1))
+    fig.savefig(str(output), format="svg", bbox_inches="tight")
+    plt.close(fig)

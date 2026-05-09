@@ -2,7 +2,7 @@ from pathlib import Path
 
 import typer
 
-from benchdiff.reporter import print_markdown, print_results
+from benchdiff.reporter import print_markdown, print_results, save_svg
 from benchdiff.runner import run
 
 app = typer.Typer()
@@ -16,6 +16,7 @@ def main(
     repeat: int = typer.Option(5, help="Number of measurement loops"),
     times: int = typer.Option(1000, help="Number of calls per measurement"),
     markdown: bool = typer.Option(False, "--markdown", help="Output as GFM markdown"),
+    svg: Path | None = typer.Option(None, "--svg", help="Save bar chart as SVG"),
 ) -> None:
     results = run(path, repeat=repeat, times=times)
     if not results:
@@ -23,5 +24,7 @@ def main(
         raise typer.Exit(1)
     if markdown:
         print_markdown(results, repeat=repeat, times=times)
+    elif svg:
+        save_svg(results, svg, repeat=repeat, times=times)
     else:
         print_results(results, repeat=repeat, times=times)
