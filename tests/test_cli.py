@@ -44,3 +44,34 @@ def test_cli_markdown(tmp_path: Path) -> None:
     assert result.exit_code == 0
     assert "**group**" in result.output
     assert "| Benchmark |" in result.output
+
+
+def test_cli_svg(tmp_path: Path) -> None:
+    bench = tmp_path / "bench_example.py"
+    bench.write_text(
+        "def fn_a(): pass\n"
+        "def fn_b(): pass\n"
+        '__benchmarks__ = [("group", [fn_a, fn_b])]\n'
+    )
+    output = tmp_path / "bench.svg"
+    result = runner.invoke(
+        app, [str(tmp_path), "--svg", str(output), "--repeat", "2", "--times", "10"]
+    )
+    assert result.exit_code == 0
+    assert output.exists()
+    assert "<svg" in output.read_text()
+
+
+def test_cli_svg_single_file(tmp_path: Path) -> None:
+    bench = tmp_path / "bench_example.py"
+    bench.write_text(
+        "def fn_a(): pass\n"
+        "def fn_b(): pass\n"
+        '__benchmarks__ = [("group", [fn_a, fn_b])]\n'
+    )
+    output = tmp_path / "bench.svg"
+    result = runner.invoke(
+        app, [str(bench), "--svg", str(output), "--repeat", "2", "--times", "10"]
+    )
+    assert result.exit_code == 0
+    assert output.exists()

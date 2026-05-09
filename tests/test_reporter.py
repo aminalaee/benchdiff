@@ -1,9 +1,18 @@
 import sys
+from pathlib import Path
 
 import pytest
 
 from benchdiff.models import BenchmarkResult, GroupResult
-from benchdiff.reporter import _fmt_time, _hint, _unit, print_markdown, print_results
+from benchdiff.reporter import (
+    _fmt_time,
+    _hint,
+    _to_unit,
+    _unit,
+    print_markdown,
+    print_results,
+    save_svg,
+)
 
 
 def test_unit_nanoseconds() -> None:
@@ -20,6 +29,22 @@ def test_unit_milliseconds() -> None:
 
 def test_unit_seconds() -> None:
     assert _unit(1.5) == "s"
+
+
+def test_to_unit_nanoseconds() -> None:
+    assert _to_unit(0.0000005, "ns") == pytest.approx(500.0)
+
+
+def test_to_unit_microseconds() -> None:
+    assert _to_unit(0.0000015, "µs") == pytest.approx(1.5)
+
+
+def test_to_unit_milliseconds() -> None:
+    assert _to_unit(0.0015, "ms") == pytest.approx(1.5)
+
+
+def test_to_unit_seconds() -> None:
+    assert _to_unit(1.5, "s") == pytest.approx(1.5)
 
 
 def test_fmt_time_nanoseconds() -> None:
@@ -183,3 +208,58 @@ def test_print_markdown_no_rich_markup(capsys: pytest.CaptureFixture) -> None:
     output = capsys.readouterr().out
     assert "[green]" not in output
     assert "[red]" not in output
+
+
+@pytest.fixture
+def two_groups() -> list[GroupResult]:
+    return [
+        GroupResult(
+            name="uuid4()",
+            results=[
+                BenchmarkResult(name="stdlib_uuid4", timings=[0.0000012, 0.0000013]),
+                BenchmarkResult(name="uuid_utils_uuid4", timings=[5.6e-8, 6e-8]),
+            ],
+        ),
+        GroupResult(
+            name="uuid7()",
+            results=[
+                BenchmarkResult(name="stdlib_uuid7", timings=[0.0000014, 0.0000014]),
+                BenchmarkResult(name="uuid_utils_uuid7", timings=[8.3e-8, 9e-8]),
+            ],
+        ),
+    ]
+
+
+def test_save_svg_creates_file(tmp_path: Path, two_groups: list[GroupResult]) -> None:
+    output = tmp_path / "bench.svg"
+    save_svg(two_groups, output)
+    assert output.exists()
+    assert output.stat().st_size > 0
+
+
+def test_save_svg_is_valid_svg(tmp_path: Path, two_groups: list[GroupResult]) -> None:
+    output = tmp_path / "bench.svg"
+    save_svg(two_groups, output)
+    content = output.read_text()
+    assert content.startswith("<?xml")
+    assert "<svg" in content
+
+
+def test_save_svg_contains_group_names(
+    tmp_path: Path, two_groups: list[GroupResult]
+) -> None:
+    output = tmp_path / "bench.svg"
+    save_svg(two_groups, output)
+    content = output.read_text()
+    assert "uuid4()" in content
+    assert "uuid7()" in content
+
+
+def test_save_svg_contains_system_info(
+    tmp_path: Path, two_groups: list[GroupResult]
+) -> None:
+    output = tmp_path / "bench.svg"
+    save_svg(two_groups, output, repeat=3, times=500)
+    content = output.read_text()
+    assert sys.version.split()[0] in content
+    assert "rounds" in content
